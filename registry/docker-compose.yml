@@ -1,0 +1,63 @@
+version: "3.8"
+services:
+  registry-backend:
+    image: registry
+    container_name: backend-registry
+    expose:
+      - "5000"
+    ports:
+      
+      - "5000:5000"
+    
+    volumes:
+      - type: volume
+        source: my-registry
+        target: /var/lib/registry
+        volume:
+          nocopy: no
+    
+    init: true
+    networks:
+      registry-network:
+    labels:
+      maintainer: "Rishivant Singh"
+      about: "docker registry"
+    restart: unless-stopped
+
+
+
+  registry-frontend:
+    image: konradkleine/docker-registry-frontend:v2 
+    container_name: frontend-registry
+    depends_on: 
+      - registry-backend
+    environment:
+      - ENV_DOCKER_REGISTRY_HOST=registry-backend
+    env_file:
+      - ./envfile
+    ports:
+      - "8080:80"
+    networks:
+      registry-network:
+        aliases:
+          - frontend
+    labels:
+      maintainer: "Rishivant singh"
+      about: "registry frontend"
+    restart: unless-stopped
+    init: true
+
+volumes:
+  my-registry:
+    name: Image-Registry
+    labels:
+      maintainer: "Rishivant singh"
+      about: "registry volume"
+
+networks:
+  registry-network:
+    driver: bridge
+    labels:
+      maintainer: "Rishivant singh"
+      about: "registry network"
+    name: registry-network
